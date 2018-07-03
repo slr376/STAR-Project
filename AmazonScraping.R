@@ -1,6 +1,8 @@
 library(rvest)
 library(stringr)
 library(tidytext)
+library(dplyr)
+library(magrittr)
 
 url <- 'https://www.amazon.com/Star-Wars-Battlefront-II-Xbox-One/product-reviews/B071Y1RXHG/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews'
 
@@ -23,3 +25,17 @@ for (page in url_list) {
   revList <- c(revList, html_text(rev))
 }
 
+clean <- function(string) {
+  #temp <- tolower(string)
+  temp <- stringr::str_replace_all(string,'[.,,,(,),-,:]','')
+  temp <- stringr::str_replace_all(temp,"[\\s]+", " ")
+  temp <- stringr::str_split(temp, " ")[[1]]
+  return(temp)
+} 
+
+cleanList = c()
+
+#Cleaning up each review and turns results into individual characters
+for (rev in revList) {
+  cleanList = c(cleanList, clean(rev))
+}
