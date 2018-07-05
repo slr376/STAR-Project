@@ -3,6 +3,7 @@ library(stringr)
 library(tidytext)
 library(dplyr)
 library(magrittr)
+library(tidyverse)
 
 url <- 'https://www.amazon.com/Star-Wars-Battlefront-II-Xbox-One/product-reviews/B071Y1RXHG/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews'
 
@@ -25,17 +26,23 @@ for (page in url_list) {
   revList <- c(revList, html_text(rev))
 }
 
-clean <- function(string) {
-  #temp <- tolower(string)
-  temp <- stringr::str_replace_all(string,'[.,,,(,),-,:]','')
-  temp <- stringr::str_replace_all(temp,"[\\s]+", " ")
-  temp <- stringr::str_split(temp, " ")[[1]]
-  return(temp)
-} 
+#Puts Text Into Tidy Format
+textDF <- data_frame(line = 1:206, text = revList)
+textDF <- textDF %>%
+  unnest_tokens(words, text)
 
-cleanList = c()
+#Removes Stop Words
+data("stop_words")
+textDF <- textDF %>%
+  anti_join(stop_words, by=c("words"="word"))
 
-#Cleaning up each review and turns results into individual characters
-for (rev in revList) {
-  cleanList = c(cleanList, clean(rev))
-}
+textDF %>%
+  count(words, sort = TRUE)
+
+nrc_neg <- get_sentiments("nrc") %>% 
+  filter(sentiment == "disgust")
+
+textDF %>%
+  filter() %>%
+  inner_join(nrc_neg, by=c('words'='word')) %>%
+  count(words, sort = TRUE)
