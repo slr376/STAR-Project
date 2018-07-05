@@ -3,7 +3,10 @@ library(stringr)
 library(tidytext)
 library(dplyr)
 library(magrittr)
-library(tidyverse)
+library(stringr)
+library(tidyr)
+library(wordcloud)
+
 
 url <- 'https://www.amazon.com/Star-Wars-Battlefront-II-Xbox-One/product-reviews/B071Y1RXHG/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews'
 
@@ -36,13 +39,17 @@ data("stop_words")
 textDF <- textDF %>%
   anti_join(stop_words, by=c("words"="word"))
 
+extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea"), 
+                                          lexicon = c("custom")), 
+                               stop_words)
+textDF <- textDF %>%
+  anti_join(extraWords, by=c("words"="word"))
+
 textDF %>%
   count(words, sort = TRUE)
 
-nrc_neg <- get_sentiments("nrc") %>% 
-  filter(sentiment == "disgust")
-
+#Creates Word Cloud
 textDF %>%
-  filter() %>%
-  inner_join(nrc_neg, by=c('words'='word')) %>%
-  count(words, sort = TRUE)
+  anti_join(stop_words, by=c("words"="word")) %>%
+  count(words) %>%
+  with(wordcloud(words,n, max.words = 50))
