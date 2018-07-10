@@ -8,7 +8,7 @@ library(tidyr)
 library(wordcloud)
 library(ggplot2)
 
-#-----------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------DATA COLLECTION AND CLEANING------------------------------------------------------------------------
 
 url <- 'https://www.amazon.com/Star-Wars-Battlefront-II-Xbox-One/product-reviews/B071Y1RXHG/ref=cm_cr_arp_d_paging_btm_next_2?ie=UTF8&reviewerType=all_reviews'
 
@@ -63,8 +63,6 @@ textSentiment <- textDF %>%
   ungroup() %>%
   inner_join(get_sentiments('nrc'))
 
-textSentiment
-
 textSentiment %>%
   count(word, sentiment) %>%
   group_by(sentiment) %>%
@@ -77,4 +75,7 @@ textSentiment %>%
   coord_flip()
 
 #----------------------------------------------------------------TOPIC MODELING------------------------------------------------------------------------
-
+library(topicmodels)
+library(tm)
+textDTM <- textDF %>%
+  cast_dtm(word, n)
