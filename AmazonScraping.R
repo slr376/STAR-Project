@@ -41,7 +41,7 @@ data("stop_words")
 textDF <- textDF %>%
   anti_join(stop_words)
 
-extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea"), 
+extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like'), 
                                           lexicon = c("custom")), 
                                stop_words)
 textDF <- textDF %>%
@@ -59,6 +59,23 @@ textDF %>%
   with(wordcloud(words,n, max.words = 50))
 
 #----------------------------------------------------------------SENTIMENT ANALYSIS------------------------------------------------------------------------
+#Positive vs. Negative
+textBing <- textDF %>%
+  ungroup() %>%
+  inner_join(get_sentiments('bing'))
+
+textBing %>%
+  count(word, sentiment) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ sentiment, scales = "free") +
+  coord_flip()
+
+#10 Sentiment Categories
 textSentiment <- textDF %>% 
   ungroup() %>%
   inner_join(get_sentiments('nrc'))
@@ -78,4 +95,4 @@ textSentiment %>%
 library(topicmodels)
 library(tm)
 textDTM <- textDF %>%
-  cast_dtm(word, n)
+  cast_dtm(textDF, )
