@@ -93,6 +93,29 @@ textSentiment %>%
 
 #----------------------------------------------------------------TOPIC MODELING------------------------------------------------------------------------
 library(topicmodels)
-library(tm)
-textDTM <- textDF %>%
-  cast_dtm(textDF, )
+#Groups Reviews Individually
+revDF <- as_data_frame(revList)
+revDF$Source <- 'Amazon'
+revDF$RevNum <- 1:206
+
+#Breaks Each Review Into Individual Words
+byWord <- revDF %>%
+  unnest_tokens(word, value)
+
+wordCount <- byWord %>%
+  anti_join(stop_words) %>%
+  count(Source, word, sort = TRUE) %>%
+  ungroup()
+
+revDTM <- wordCount %>%
+  cast_dtm(Source, word, n)
+
+revLDA <- LDA(revDTM, k = 4, control = list(seed = 1234))
+
+revTopics <- tidy(revLDA, matrix = "beta")
+
+
+
+
+
+
