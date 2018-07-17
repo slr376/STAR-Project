@@ -93,6 +93,7 @@ textSentiment %>%
 
 #----------------------------------------------------------------TOPIC MODELING------------------------------------------------------------------------
 library(topicmodels)
+library(broom)
 #Groups Reviews Individually
 revDF <- as_data_frame(revList)
 revDF$Source <- 'Amazon'
@@ -104,18 +105,26 @@ byWord <- revDF %>%
 
 wordCount <- byWord %>%
   anti_join(stop_words) %>%
-  count(Source, word, sort = TRUE) %>%
+  anti_join(extraWords) %>%
+  count(RevNum, word, sort = TRUE) %>%
   ungroup()
 
 revDTM <- wordCount %>%
-  cast_dtm(Source, word, n)
+  cast_dtm(document = RevNum, word, n)
 
 revLDA <- LDA(revDTM, k = 4, control = list(seed = 1234))
 
-revTopics <- tidy(revLDA, matrix = "beta")
+revTopics <- tidy(revLDA, matrix = 'beta')
 
+topTerms <- revTopics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
 
-
-
-
-
+topTerms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
