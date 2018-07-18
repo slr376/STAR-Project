@@ -41,7 +41,7 @@ data("stop_words")
 textDF <- textDF %>%
   anti_join(stop_words)
 
-extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like'), 
+extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like', 'gift', 'fun', 'nice', 'amazing', 'awesome', '4', 'xbox', 'loves', 'battle', 'son', '3', '10', 'reviews', 'pretty', 'grandson', '1'), 
                                           lexicon = c("custom")), 
                                stop_words)
 textDF <- textDF %>%
@@ -93,7 +93,7 @@ textSentiment %>%
 
 #----------------------------------------------------------------TOPIC MODELING------------------------------------------------------------------------
 library(topicmodels)
-library(broom)
+library(tidyverse)
 #Groups Reviews Individually
 revDF <- as_data_frame(revList)
 revDF$Source <- 'Amazon'
@@ -110,9 +110,9 @@ wordCount <- byWord %>%
   ungroup()
 
 revDTM <- wordCount %>%
-  cast_dtm(document = RevNum, word, n)
+  cast_dtm(RevNum, word, n)
 
-revLDA <- LDA(revDTM, k = 4, control = list(seed = 1234))
+revLDA <- LDA(revDTM, k = 5, control = list(seed = 1234))
 
 revTopics <- tidy(revLDA, matrix = 'beta')
 
