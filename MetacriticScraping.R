@@ -3,7 +3,6 @@ library(stringr)
 library(tidytext)
 library(dplyr)
 library(magrittr)
-library(stringr)
 library(tidyr)
 library(wordcloud)
 library(ggplot2)
@@ -97,7 +96,7 @@ library(tidyverse)
 #Groups Reviews Individually
 revDF <- as_data_frame(revList)
 revDF$Source <- 'Metacritic'
-revDF$RevNum <- 1:2388
+revDF$RevNum <- 1:2387
 
 byWord <- revDF %>%
   unnest_tokens(word, value)
@@ -115,7 +114,7 @@ revLDA <- LDA(revDTM, k = 10, control = list(seed = 1234))
 
 revTopics <- tidy(revLDA, matrix = 'beta')
 
-topTerms <- revTopics %>%
+revtopTerms <- revTopics %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   ungroup() %>%
