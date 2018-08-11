@@ -39,8 +39,7 @@ for (id in AmzID) {
   
   #obtain the text in the node, remove "\n" from the text, and remove white space
   prod <- html_nodes(doc, "#productTitle") %>% html_text() %>% gsub("\n", "", .) %>% trim()
-  prodList = c(prodList, prod)
-  pages <- 30
+  pages <- 20
   Amzurl = c()
   for(page_num in 0:pages){
     url <- paste0("http://www.amazon.com/product-reviews/",id,"/?pageNumber=", page_num)
@@ -54,8 +53,8 @@ for (id in AmzID) {
       html_text() %>%
       str_extract("\\d") %>%
       as.numeric()
-    RevDF <- data.frame(prod, body, stars)
-    AmzRevDF <- rbind(AmzRevDF, RevDF)
+    AMZtemp <- data.frame(prod, body, stars)
+    AmzRevDF <- rbind(AmzRevDF, Amztemp)
   }
 }
 
@@ -94,8 +93,15 @@ for (game in games) {
   for (x in MCurlList) {
     webpage <- read_html(x)
     body <- html_text(html_nodes(webpage, css = '.review_body'))
-    temp <- data.frame(game, body)
-    MCRevDF <- rbind(MCRevDF, temp)
+    body <- body[2:length(body)]
+    stars <- html_text(html_nodes(webpage, css = '.indiv'))
+    prod <- rep(game, length(body))
+    MCtemp <- data.frame(prod, body, stars)
+    MCRevDF <- rbind(MCRevDF, MCtemp)
   }
 }
+
+MCRevDF$stars <- as.numeric(MCRevDF$stars)
+
+masterDF <- rbind(MCRevDF, AmzRevDF)
 
