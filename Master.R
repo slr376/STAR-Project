@@ -132,7 +132,7 @@ extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1
                         stop_words)
 tidyGame <- tidyGame %>%
   anti_join(extraWords)
-
+#Plot 1
 gameSent <- tidyGame %>%
   inner_join(get_sentiments("bing")) %>%
   count(prod, index = index %/% 4, sentiment) %>%
@@ -142,12 +142,14 @@ gameSent <- tidyGame %>%
 ggplot(gameSent, aes(index, sentiment, fill = prod)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~prod, ncol = 2, scales = "free_x") +
-  labs(title='Title')
+  labs(title='Sentiment By Review') +
+  theme(plot.title = element_text(hjust = 0.5))
 
 wordCount <- tidyGame %>%
   group_by(prod) %>%
   summarize(word = n())
 
+#Plot 2
 bingChart <- tidyGame %>%
   right_join(get_sentiments('bing')) %>%
   group_by(prod) %>%
@@ -155,14 +157,29 @@ bingChart <- tidyGame %>%
 
 bingChart <- bingChart[-c(9, 10), ]
 
-ggplot(bingChart, aes(fill=sentiment, ymax=cumsum(bingChart$n), ymin=c(0, head(cumsum(bingChart$n), n=-1)), xmax=4, xmin=3)) +
-  geom_rect(colour="grey30") +
-  facet_wrap(~prod, ncol = 2) +
-  coord_polar(theta="y") +
-  xlim(c(0, 4)) +
-  theme_bw() +
-  theme(panel.grid=element_blank()) +
-  theme(axis.text=element_blank()) +
-  theme(axis.ticks=element_blank()) +
-  labs(title="Positive vs. Negative")
+ggplot(bingChart, aes(x = prod, y = n,fill=sentiment)) +
+  geom_bar(stat='identity', width = 0.45) +
+  facet_wrap(~prod, scales = "free") +
+  labs(title='Positive vs. Negative') +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+#Plot 3
+nrcChart <- tidyGame %>%
+  right_join(get_sentiments('nrc')) %>%
+  group_by(prod) %>%
+  count(sentiment)
+
+nrcChart <- nrcChart[-c(41:50), ]
+
+ggplot(nrcChart, aes(x = prod, y = n,fill=sentiment)) +
+  geom_bar(stat='identity', width = 0.45) +
+  facet_wrap(~prod, scales = "free") +
+  labs(title='NRC Sentiments') +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        plot.title = element_text(hjust = 0.5))
 #-----Topic Modeling
