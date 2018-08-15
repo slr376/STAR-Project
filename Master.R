@@ -7,6 +7,7 @@ library(magrittr)
 library(tidyr)
 library(wordcloud)
 library(ggplot2)
+library(stopwords)
 
 #-----Data Collection & Storage-----
 AmzSWBII <- 'B071Y1RXHG'
@@ -127,7 +128,7 @@ data("stop_words")
 tidyGame <- tidyGame %>%
   anti_join(stop_words)
 
-extraWords <- bind_rows(data_frame(word = c("game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like', 'gift', 'fun', 'nice', 'amazing', 'awesome', '4', 'xbox', 'loves', 'battle', 'son', '3', '10', 'reviews', 'pretty', 'grandson', '1'), 
+extraWords <- bind_rows(data_frame(word = c('call','duty','battlefield', 'cod', 'wwii', 'juego','modo', 'guerra', 'bien', 'bien', 'si', '6', '66', 'lul', "game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like', 'gift', 'fun', 'nice', 'amazing', 'awesome', '4', 'xbox', 'loves', 'battle', 'son', '3', '10', 'reviews', 'pretty', 'grandson', '1'), 
                                    lexicon = c("custom")), 
                         stop_words)
 tidyGame <- tidyGame %>%
@@ -183,3 +184,37 @@ ggplot(nrcChart, aes(x = prod, y = n,fill=sentiment)) +
         axis.ticks.x=element_blank(),
         plot.title = element_text(hjust = 0.5))
 #-----Topic Modeling
+library(topicmodels)
+
+words <- masterDF %>%
+  mutate(index = row_number()) %>%
+  unnest_tokens(word, body)
+
+count <- words %>%
+  anti_join(stop_words) %>%
+  anti_join(extraWords) %>%
+  anti_join(get_stopwords('es')) %>%
+  anti_join(get_stopwords('pt')) %>%
+  anti_join(get_stopwords('ru')) %>%
+  count(word, index, sort = TRUE) %>%
+  ungroup()
+
+gameDTM <- count %>%
+  cast_dtm(index, word, n)
+
+gameLDA <- LDA(gameDTM, k = 4, control = list(seed = 1234))
+
+topics <- tidy(gameLDA, matrix = 'beta')
+
+topTerms <- topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+topTerms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
