@@ -128,7 +128,7 @@ data("stop_words")
 tidyGame <- tidyGame %>%
   anti_join(stop_words)
 
-extraWords <- bind_rows(data_frame(word = c('call','duty','battlefield', 'cod', 'wwii', 'juego','modo', 'guerra', 'bien', 'bien', 'si', '6', '66', 'lul', "game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like', 'gift', 'fun', 'nice', 'amazing', 'awesome', '4', 'xbox', 'loves', 'battle', 'son', '3', '10', 'reviews', 'pretty', 'grandson', '1'), 
+extraWords <- bind_rows(data_frame(word = c('call','mapas', 'historia', 'mundial', 'armas', 'é', 'und', 'multijugador', '????????', 'NA', '2', '60', 'campaña', 'duty','battlefield', 'cod', 'wwii', 'juego','modo', 'guerra', 'bien', 'bien', 'si', '6', '66', 'lul', "game", 'play', 'star', 'wars', 'bf1', 'bf2', 'players', "battlefront", "playing", "ea", 'kill', 'death','assault', 'damage', 'like', 'gift', 'fun', 'nice', 'amazing', 'awesome', '4', 'xbox', 'loves', 'battle', 'son', '3', '10', 'reviews', 'pretty', 'grandson', '1'), 
                                    lexicon = c("custom")), 
                         stop_words)
 tidyGame <- tidyGame %>%
@@ -199,10 +199,12 @@ count <- words %>%
   count(word, index, sort = TRUE) %>%
   ungroup()
 
+count <- na.omit(count)
+
 gameDTM <- count %>%
   cast_dtm(index, word, n)
 
-gameLDA <- LDA(gameDTM, k = 4, control = list(seed = 1234))
+gameLDA <- LDA(gameDTM, k = 5, control = list(seed = 1234))
 
 topics <- tidy(gameLDA, matrix = 'beta')
 
@@ -211,10 +213,15 @@ topTerms <- topics %>%
   top_n(10, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-
+#-----Plot 4
 topTerms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
   coord_flip()
+
+#-----Plot 5
+gameGamma <- tidy(gameLDA, matrix = 'gamma')
+gameGamma <- gameGamma %>%
+  separate(document, 'prod', sep = '_', convert = TRUE)
