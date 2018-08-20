@@ -223,5 +223,10 @@ topTerms %>%
 
 #-----Plot 5
 gameGamma <- tidy(gameLDA, matrix = 'gamma')
-gameGamma <- gameGamma %>%
-  separate(document, 'prod', sep = '_', convert = TRUE)
+gameGamma <- merge(gameGamma, words, by.x ='document', by.y = 'index')
+
+gameGamma %>%
+  mutate(prod = reorder(prod, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  facet_wrap(~ prod)
